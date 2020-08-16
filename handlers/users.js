@@ -1,17 +1,14 @@
 const { db, admin } = require("../utils/admin");
 const firebase = require("firebase")
 const config = require("../utils/config")
-const { validateSignupData, validateLoginData } = require("../utils/validators");
-const { uuid } = require("uuidv4");
-
+const { validateSignupData, validateLoginData, reduceUserDetails } = require("../utils/validators");
 
 firebase.initializeApp(config)
 const auth = firebase.auth()
 
 const filePath = filename => `https://firebasestorage.googleapis.com/v0/b/social-app-80d1a.appspot.com/o/${filename}?alt=media`;
 
-// https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${filename}?alt=media`;
-
+// Sign up user
 exports.signup = (req, res) => {
 
     const newUser = { ...req.body }
@@ -51,6 +48,7 @@ exports.signup = (req, res) => {
 
 }
 
+// Log in user
 exports.login = (req, res) => {
 
     const user = { ...req.body };
@@ -69,20 +67,53 @@ exports.login = (req, res) => {
 
 }
 
+// Add user details
+exports.addUserDetails = (req, res) => {
+    let userDetails = reduceUserDetails(req.body);
+    db.doc(`/users/${req.user.handle}`).update(userDetails)
+        .then(() => res.json({ message: "Details added successfully" }))
+        .catch(err => res.status(500).json({ error: err.code }))
+}
+
+// Get user details
+exports.getAuthentificatedUserData = (req, res) => {
+    let userData = {};
+
+    db.doc(`/users/${req.user.handle}`).get()
+        .then(doc => {
+
+            if (doc.exists) {
+                userData.credentials = doc.data()
+                return db.collection("likes")
+                    .where("userHandle", "==", req.user.handle)
+                    .get()
+            }
+
+        })
+        .then(data => {
+            userData.likes = []
+            data.forEach(doc => {
+                userData.likes.push(doc.data())
+            })
+            return res.json(userData)
+        })
+        .catch(err => res.status(500).json({ error: err.code }))
+}
+
+// Upload profile Image
 exports.uploadImage = (req, res) => {
     const BusBoy = require("busboy");
     const path = require("path");
     const os = require("os");
     const fs = require("fs");
-    let generatedToken = uuid();
 
     const busboy = new BusBoy({ headers: req.headers });
 
     let newFileName, imageToBeUploaded;
 
     busboy.on("file", (fieldName, file, fileName, encoding, mimetype) => {
-
-        if (mimetype !== "img/jpg" || mimetype !== "img/png") {
+        console.log(mimetype);
+        if (mimetype !== "image/jpg" && mimetype !== "image/png") {
             return res.status(400).json({ error: "Wrong file type submitted" })
         }
 
@@ -104,12 +135,7 @@ exports.uploadImage = (req, res) => {
         admin.storage().bucket()
             .upload(imageToBeUploaded.filepath, {
                 resumable: false,
-                metadata: {
-                    metadata: {
-                        contentType: imageToBeUploaded.mimetype,
-                        firebaseStorageDownloadTokens: generatedToken,
-                    }
-                }
+                metadata: { metadata: { contentType: imageToBeUploaded.mimetype } }
             })
             .then(() => {
                 const imageUrl = filePath(newFileName);

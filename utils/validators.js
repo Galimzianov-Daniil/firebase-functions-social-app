@@ -34,5 +34,14 @@ const validateAs = (data, dataType = "" ) => {
 
 }
 
+exports.reduceUserDetails = data => {
+    const userDetails = {};
+    const fields = ["bio", "website", "location"]
+
+    fields.forEach(field => !isEmpty(data[field]) ? userDetails[field] = data[field] : null)
+
+    return userDetails;
+}
+
 exports.validateSignupData = data => validateAs(data, "signup");
 exports.validateLoginData = data => validateAs(data);
