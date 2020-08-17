@@ -1,4 +1,5 @@
 const { db } = require("../utils/admin");
+const { isEmpty } = require("../utils/validators");
 
 exports.getAllScreams = (req, res) => {
     db.collection("screams").orderBy("createdAt", "desc").get()
@@ -10,7 +11,10 @@ exports.getAllScreams = (req, res) => {
             }))
             return res.json(screams);
         })
-        .catch(err => console.error(err))
+        .catch(err => {
+            console.error(err);
+            return res.status(500).json({ error: err.code });
+        })
 }
 
 exports.postScream = (req, res) => {
@@ -28,6 +32,57 @@ exports.postScream = (req, res) => {
         })
         .catch(err => {
             console.error(err);
-            return res.status(500).json({ error: `something went wrong` });
+            return res.status(500).json({ error: err.code });
+        })
+}
+
+exports.getScream = (req, res) => {
+    let screamData = {};
+
+    db.doc(`/screams/${req.params.screamId}`).get()
+        .then(doc => {
+            if (!doc.exists) return res.status(404).json({ error: "Scream not found" })
+            screamData = doc.data()
+            screamData.screamId = doc.id;
+            return db.collection("comments")
+                // .orderBy("createdAt", "desc")
+                .where("screamId", "==", screamData.screamId)
+                .get()
+        })
+        .then(data => {
+            screamData.comments = [];
+            data.forEach(commentDoc => screamData.comments.push(commentDoc.data()))
+        })
+        .then(() => res.json(screamData))
+        .catch(err => {
+            console.error(err);
+            return res.status(500).json({ error: err.code });
+        })
+
+}
+
+exports.commentOnScream = (req, res) => {
+
+    if (isEmpty(req.body.body)) return res.status(403).json({
+        error: { body: "Must not be empty" }
+    })
+
+    db.doc(`/screams/${req.params.screamId}`).get()
+        .then(doc => {
+            if (!doc.exists) return res.status(404).json({ error: "Scream not found" })
+            return doc.id;
+        })
+        .then(screamId => ({
+            body: req.body.body,
+            userHandle: req.user.handle,
+            createdAt: new Date().toISOString(),
+            userImg: req.user.imageUrl,
+            screamId
+        }))
+        .then(newComment => db.collection("comments").add(newComment))
+        .then(() => res.json({ message: `new comment created successfully` }))
+        .catch(err => {
+            console.error(err);
+            return res.status(500).json({ error: err.code });
         })
 }

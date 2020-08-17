@@ -45,3 +45,5 @@ exports.reduceUserDetails = data => {
 
 exports.validateSignupData = data => validateAs(data, "signup");
 exports.validateLoginData = data => validateAs(data);
+exports.isEmpty = isEmpty
+exports.isEmail = isEmail
