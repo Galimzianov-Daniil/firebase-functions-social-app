@@ -1,9 +1,9 @@
 module.exports = {
-    apiKey: "AIzaSyBQQCIJZ242AHn_wmXiA-oxjKBaeFXbESo",
-    authDomain: "social-app-80d1a.firebaseapp.com",
-    databaseURL: "https://social-app-80d1a.firebaseio.com",
-    projectId: "social-app-80d1a",
-    storageBucket: "social-app-80d1a.appspot.com",
-    messagingSenderId: "425361342468",
-    appId: "1:425361342468:web:744b43274b7951bc66f551"
+    apiKey: "AIzaSyAi9Y-k7FKdHL-d3TwN0e5pFPZRIkwUEW8",
+    authDomain: "twitter-clone-bf6fc.firebaseapp.com",
+    databaseURL: "https://twitter-clone-bf6fc.firebaseio.com",
+    projectId: "twitter-clone-bf6fc",
+    storageBucket: "twitter-clone-bf6fc.appspot.com",
+    messagingSenderId: "414576358741",
+    appId: "1:414576358741:web:17cc3da3e9545babbe6bdc"
 };

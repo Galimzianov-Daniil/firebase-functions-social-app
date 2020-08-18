@@ -4,7 +4,7 @@ const { isEmpty } = require("../utils/validators");
 exports.getAllScreams = (req, res) => {
     db.collection("screams").orderBy("createdAt", "desc").get()
         .then(data => {
-            let screams = []
+            let screams = [];
             data.forEach(doc => screams.push({
                 screamId: doc.id,
                 ...doc.data()
