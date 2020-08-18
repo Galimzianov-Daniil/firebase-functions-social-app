@@ -34,6 +34,9 @@ app.get("/user", FBAuth, getAuthentificatedUserData)
 app.post("/user", FBAuth, addUserDetails)
 app.post("/user/image", FBAuth, uploadImage)
 
+// Notification functionality
+
+
 // Users manage routes
 app.post("/signup", signup)
 app.post("/login", login)
@@ -47,11 +50,7 @@ exports.createNotificationOnLike = functions
             .doc(`/screams/${snapshot.data().screamId}`)
             .get()
             .then((doc) => {
-                if (
-                    doc.exists
-                ) {
-                    console.log(doc)
-                    console.log(doc.data())
+                if (doc.exists) {
                     return db.doc(`/notifications/${snapshot.id}`).set({
                         createdAt: new Date().toISOString(),
                         recipient: doc.data().userHandle,
@@ -76,7 +75,6 @@ exports.createNotificationOnComment = functions.firestore.document("/comments/{i
         db.doc(`/screams/${snapshot.data().screamId}`).get()
             .then(doc => {
                 if (doc.exists) {
-                    console.log()
                     return db.doc(`/notifications/${snapshot.id}`).set({
                         createdAt: new Date().toISOString(),
                         recipient: doc.data().handle,
