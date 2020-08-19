@@ -7,8 +7,7 @@ exports.getAllScreams = (req, res) => {
             let screams = [];
             data.forEach(doc => screams.push({
                 ...doc.data(),
-                screamId: doc.id,
-                userImg: req.user.imageUrl
+                screamId: doc.id
             }))
             return res.json(screams);
         })

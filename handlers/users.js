@@ -1,13 +1,16 @@
 const { db, admin } = require("../utils/admin");
 const firebase = require("firebase")
-const config = require("../utils/config")
+const config = require("../utils/config") // TODO: set your firebase config
 const { validateSignupData, validateLoginData, reduceUserDetails } = require("../utils/validators");
 
 firebase.initializeApp(config)
 const auth = firebase.auth()
 
-const filePath = filename => `https://firebasestorage.googleapis.com/v0/b/social-app-80d1a.appspot.com/o/${filename}?alt=media`;
-
+const filePath = filename => `
+    https://firebasestorage.googleapis.com/v0/b/
+            twitter-clone-bf6fc.appspot.com/o/
+            ${filename}?alt=media
+`;
 // Sign up user
 exports.signup = (req, res) => {
 
@@ -63,8 +66,12 @@ exports.login = (req, res) => {
         .then(data => data.user.getIdToken())
         .then(token => res.json({ token }))
         .catch(err => {
-            console.log(err);
-            res.status(500).json({ general: "Something went wrong" })
+            if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
+                return res.status(403).json({ general: "Wrong credentials, please try again" })
+            } else {
+                console.log(err)
+                res.status(500).json({ error: err.code })
+            }
         })
 
 }
