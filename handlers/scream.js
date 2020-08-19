@@ -6,8 +6,9 @@ exports.getAllScreams = (req, res) => {
         .then(data => {
             let screams = [];
             data.forEach(doc => screams.push({
+                ...doc.data(),
                 screamId: doc.id,
-                ...doc.data()
+                userImg: req.user.imageUrl
             }))
             return res.json(screams);
         })
@@ -71,9 +72,9 @@ exports.getScream = (req, res) => {
 
 exports.commentOnScream = (req, res) => {
 
-    if (isEmpty(req.body.body)) return res.status(400).json({
-        error: { body: "Must not be empty" }
-    })
+    if (isEmpty(req.body.body)){
+        return res.status(400).json({ error: { body: "Must not be empty" } })
+    }
 
     const newComment = {
         body: req.body.body,

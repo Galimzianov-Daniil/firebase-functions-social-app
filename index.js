@@ -13,7 +13,9 @@ const {
     login,
     uploadImage,
     addUserDetails,
-    getAuthentificatedUserData
+    getAuthentificatedUserData,
+    markNotificationsRead,
+    getUserDetails
 } = require("./handlers/users");
 const FBAuth = require("./utils/fbAuth");
 const { db } = require("./utils/admin");
@@ -31,11 +33,12 @@ app.post("/scream/:screamId/comment", FBAuth, commentOnScream)
 
 // User routes
 app.get("/user", FBAuth, getAuthentificatedUserData)
+app.get("/user/:handle", getUserDetails)
 app.post("/user", FBAuth, addUserDetails)
 app.post("/user/image", FBAuth, uploadImage)
 
 // Notification functionality
-
+app.post("/notifications", FBAuth, markNotificationsRead)
 
 // Users manage routes
 app.post("/signup", signup)
@@ -50,7 +53,10 @@ exports.createNotificationOnLike = functions
             .doc(`/screams/${snapshot.data().screamId}`)
             .get()
             .then((doc) => {
-                if (doc.exists) {
+                if (
+                    doc.exists
+                    && doc.data().handle !== snapshot.data().handle
+                ) {
                     return db.doc(`/notifications/${snapshot.id}`).set({
                         createdAt: new Date().toISOString(),
                         recipient: doc.data().userHandle,
@@ -66,7 +72,7 @@ exports.createNotificationOnLike = functions
 
 exports.deleteNotificationOnUnlike = functions.firestore.document("/likes/{id}")
     .onDelete(snapshot => {
-        db.doc(`/notifications/${snapshot.id}`).delete()
+        return db.doc(`/notifications/${snapshot.id}`).delete()
             .catch(err => console.error(err))
     })
 
@@ -74,7 +80,10 @@ exports.createNotificationOnComment = functions.firestore.document("/comments/{i
     .onCreate(snapshot => {
         db.doc(`/screams/${snapshot.data().screamId}`).get()
             .then(doc => {
-                if (doc.exists) {
+                if (
+                    doc.exists
+                    && doc.data().handle !== snapshot.data().handle
+                ) {
                     return db.doc(`/notifications/${snapshot.id}`).set({
                         createdAt: new Date().toISOString(),
                         recipient: doc.data().handle,
@@ -86,5 +95,28 @@ exports.createNotificationOnComment = functions.firestore.document("/comments/{i
                 }
             })
             .catch(err => console.error(err))
+
+    })
+
+exports.onUserImgChange = functions.firestore.document("/users/{userId}")
+    .onUpdate(change => {
+
+        let batch = db.batch();
+
+        if (change.after.data().imageUrl !== change.before.data().imageUrl ) {
+
+            return db.collection("screams")
+                .where("userHandle", "==", change.before.data().handle)
+                .get()
+                .then(data => {
+                    data.forEach(doc => {
+                        const scream = db.doc(`/screams/${doc.id}`);
+                        batch.update(scream, { userImg: change.after.data().imageUrl })
+                    })
+                })
+                .then(() => batch.commit())
+                .catch(err => console.error(err))
+
+        } else return true;
 
     })
