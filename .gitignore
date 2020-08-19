@@ -1,3 +1,4 @@
 node_modules/
 utils/config.js
 serviceAccountKey.json
+./utils/config.js
