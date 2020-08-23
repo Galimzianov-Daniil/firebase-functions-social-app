@@ -6,11 +6,11 @@ const { validateSignupData, validateLoginData, reduceUserDetails } = require("..
 firebase.initializeApp(config)
 const auth = firebase.auth()
 
-const filePath = filename => `
-    https://firebasestorage.googleapis.com/v0/b/
-            twitter-clone-bf6fc.appspot.com/o/
-            ${filename}?alt=media
-`;
+const filePath = filename =>
+    "https://firebasestorage.googleapis.com/v0/b/" +
+    "twitter-clone-bf6fc.appspot.com/o/" +
+    `${filename}?alt=media`;
+
 // Sign up user
 exports.signup = (req, res) => {
 
@@ -136,7 +136,7 @@ exports.uploadImage = (req, res) => {
 
     busboy.on("file", (fieldName, file, fileName, encoding, mimetype) => {
         console.log(mimetype);
-        if (mimetype !== "image/jpg" && mimetype !== "image/png") {
+        if (mimetype !== "image/jpg" && mimetype !== "image/png" && mimetype !== "image/jpeg") {
             return res.status(400).json({ error: "Wrong file type submitted" })
         }
 

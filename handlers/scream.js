@@ -121,7 +121,8 @@ exports.unlikeScream = (req, res) => {
                     } else {
                         db.doc(`/likes/${data.docs[0].id}`).delete()
                             .then(() => scream.update({ likeCount:  --screamData.likeCount}))
-                            .then(() => res.json(screamData))
+                            .then(() => db.collection("likes").get())
+                            .then(likes => res.json(likes))
                     }
                 })
             }
@@ -159,7 +160,8 @@ exports.likeScream = (req, res) => {
                                 handle: req.user.handle
                             })
                             .then(() => scream.update({ likeCount: ++screamData.likeCount }))
-                            .then(() => res.json(screamData))
+                            .then(() => db.collection("likes").get())
+                            .then(likes => res.json(likes))
                         }
                     })
 

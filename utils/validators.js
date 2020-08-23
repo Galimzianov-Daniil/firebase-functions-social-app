@@ -23,8 +23,8 @@ const validateAs = (data, dataType = "" ) => {
         } else errors.confirmPassword = "Required field"
 
         if (data.handle) {
-            if (isEmpty(data.handle)) errors.confirmPassword = "Must not be empty";
-        } else errors.confirmPassword = "Required field"
+            if (isEmpty(data.handle)) errors.handle = "Must not be empty";
+        } else errors.handle = "Required field"
     }
 
     return {
