@@ -114,7 +114,10 @@ exports.unlikeScream = (req, res) => {
             if (!doc.exists) {
                 return res.status(404).json({ error: "Scream not found" })
             } else {
-                screamData = doc.data()
+                screamData = {
+                    ...doc.data(),
+                    screamId: scream.id
+                }
                 like.get().then(data => {
                     if (data.empty) {
                             return res.status(403).json({ error: "You did not like this scream" })
@@ -148,7 +151,10 @@ exports.likeScream = (req, res) => {
             if (!doc.exists) {
                 return res.status(404).json({ error: "Scream not found" })
             } else {
-                screamData = doc.data()
+                screamData = {
+                    ...doc.data(),
+                    screamId: scream.id
+                }
                 like.get()
                     .then(data => {
                         if (!data.empty) {
