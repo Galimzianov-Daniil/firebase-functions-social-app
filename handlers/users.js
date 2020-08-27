@@ -49,7 +49,11 @@ exports.signup = (req, res) => {
         .then(() => res.status(201).json({ token }))
         .catch(err => {
             console.log(err);
-            res.status(500).json({ general: "Something went wrong" })
+            if (err.code === "auth/weak-password") {
+                res.status(400).json({ password: err.message })
+            } else {
+                res.status(500).json({ general: "Something went wrong" })
+            }
         })
 
 }
