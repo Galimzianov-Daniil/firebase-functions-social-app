@@ -86,7 +86,7 @@ exports.createNotificationOnComment = functions.firestore.document("/comments/{i
                 ) {
                     return db.doc(`/notifications/${snapshot.id}`).set({
                         createdAt: new Date().toISOString(),
-                        recipient: doc.data().handle,
+                        recipient: doc.data().userHandle,
                         sender: snapshot.data().handle,
                         type: "comment",
                         read: false,
@@ -98,12 +98,33 @@ exports.createNotificationOnComment = functions.firestore.document("/comments/{i
 
     })
 
+// exports.onUserImageChange = functions
+//     .firestore.document('/users/{userId}')
+//     .onUpdate((change) => {
+//         console.log(change.before.data());
+//         console.log(change.after.data());
+//         if (change.before.data().imageUrl !== change.after.data().imageUrl) {
+//             console.log('image has changed');
+//             const batch = db.batch();
+//             return db
+//                 .collection('screams')
+//                 .where('userHandle', '==', change.before.data().handle)
+//                 .get()
+//                 .then((data) => {
+//                     data.forEach((doc) => {
+//                         const scream = db.doc(`/screams/${doc.id}`);
+//                         batch.update(scream, { userImage: change.after.data().imageUrl });
+//                     });
+//                     return batch.commit();
+//                 });
+//         } else return true;
+//     });
+
 exports.onUserImgChange = functions.firestore.document("/users/{userId}")
     .onUpdate(change => {
 
-        let batch = db.batch();
-
         if (change.after.data().imageUrl !== change.before.data().imageUrl ) {
+            let batch = db.batch();
 
             return db.collection("screams")
                 .where("userHandle", "==", change.before.data().handle)
@@ -114,8 +135,19 @@ exports.onUserImgChange = functions.firestore.document("/users/{userId}")
                         batch.update(scream, { userImg: change.after.data().imageUrl })
                     })
                 })
+                .then(() => {
+                    return db.collection("comments")
+                        .where("handle", "==", change.before.data().handle)
+                        .get()
+                        .then(data => {
+                            data.forEach(doc => {
+                                const comment = db.doc(`/comments/${doc.id}`);
+                                console.log(doc.id)
+                                batch.update(comment, { userImg: change.after.data().imageUrl })
+                            })
+                        })
+                })
                 .then(() => batch.commit())
-                .catch(err => console.error(err))
 
         } else return true;
 

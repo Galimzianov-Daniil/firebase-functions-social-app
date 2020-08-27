@@ -19,9 +19,7 @@ exports.getAllScreams = (req, res) => {
 
 exports.postScream = (req, res) => {
 
-    if (isEmpty(req.body.body)) return res.status(400).json({
-        error: { body: "Must not be empty" }
-    })
+    if (isEmpty(req.body.body)) return res.status(400).json({ body: "Must not be empty" })
 
     const newScream = {
         body: req.body.body,
@@ -72,7 +70,7 @@ exports.getScream = (req, res) => {
 exports.commentOnScream = (req, res) => {
 
     if (isEmpty(req.body.body)){
-        return res.status(400).json({ error: { body: "Must not be empty" } })
+        return res.status(400).json({ body: "Must not be empty" })
     }
 
     const newComment = {
@@ -92,7 +90,7 @@ exports.commentOnScream = (req, res) => {
             }
         })
         .then(() => db.collection("comments").add(newComment))
-        .then(() => res.json({ message: `New comment created successfully` }))
+        .then(() => res.json(newComment))
         .catch(err => {
             console.error(err);
             return res.status(500).json({ error: err.code });
